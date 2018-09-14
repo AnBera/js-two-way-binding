@@ -1,58 +1,46 @@
-(function() {
-    var elements = document.querySelectorAll('[data-tw-bind]'),
-        scope = {};
-    elements.forEach(function(element) {
-        //execute scope setter
-        if(element.type === 'text'|| element.type === 'textarea'){
-            var propToBind = element.getAttribute('data-tw-bind');
-            addScopeProp(propToBind);
-            element.onkeyup = function(){
-                scope[propToBind] = element.value;
-            }
-        };
+(function () {
 
-        //bind prop to elements
-        function addScopeProp(prop){
-            //add property if needed
-            if(!scope.hasOwnProperty(prop)){
-                //value to populate with newvalue
-                var value;
-                Object.defineProperty(scope, prop, {
-                    set: function (newValue) {
-                        value = newValue;
-                        elements.forEach(function(element){
-                            //change value to binded elements
-                            if(element.getAttribute('data-tw-bind') === prop){
-                                if(element.type && (element.type === 'text' ||
-                                    element.type === 'textarea')){
-                                    element.value = newValue;
-                                }
-                                else if(!element.type){
-                                    element.innerHTML = newValue;
-                                }
+    var vm = {};
+    var els = document.querySelectorAll('[twoWay]');
+    // console.log(els);
+
+    var vmBindingHook = function (propName) {
+        if (!vm.hasOwnProperty(propName)) {
+            var val;
+            Object.defineProperty(vm, propName, {
+                set: function (newVal) {
+                    val = newVal;
+                    console.log('inside define prop');
+                    els.forEach(function (el) {
+                        if (el.getAttribute('twoWay') === propName) {
+                            if (el.type === 'text') {
+                                el.value = newVal;
+                            } else {
+                                el.innerHTML = newVal;
                             }
-                        });
-                    },
-                    get: function(){
-                        return value;
-                    },
-                    enumerable: true
-                });
+                        }
+                    });
+                },
+                get: function(){
+                    return val;
+                },
+                enumerable: true
+            });
+
+        }
+
+    };
+
+    els.forEach(function (el) {
+        let propName = el.getAttribute('twoWay');
+        if (el.type === 'text') {
+            console.log(el);
+            vmBindingHook(propName);
+            el.onkeyup = function () {
+                vm[propName] = el.value;
+                console.log(vm);
             }
         }
     });
 
-    log = function() {
-        Object.keys(scope).forEach(function(key){
-            console.log(key + ': ' + scope[key]);
-        });
-    }
-
-    changeNameByCode = function() {
-        scope.name = 'name Changed by Code';
-    }
-
-    changeSurnameByCode = function() {
-        scope.surname = 'surname Changed by Code';
-    }
 })();
